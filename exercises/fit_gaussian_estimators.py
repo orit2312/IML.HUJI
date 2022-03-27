@@ -8,29 +8,29 @@ pio.templates.default = "simple_white"
 def test_univariate_gaussian():
     # Question 1 - Draw samples and print fitted model
     X = np.random.normal(10, 1, 1000)
-    uni_random = UnivariateGaussian()  # false not needded- defalt?
+    uni_random = UnivariateGaussian()
     uni_random.fit(X)
     print((uni_random.mu_, uni_random.var_))
 
     # Question 2 - Empirically showing sample mean is consistent
     mu = 10
     mu_dists = []
-    space = np.linspace(10, 1000, 100).astype(np.int)
+    space = np.linspace(10, 1000, 100).astype(int)
     for sam in space:
         sample_mu = np.mean(X[:sam])
         mu_dist = np.abs(sample_mu - mu)
         mu_dists.append(mu_dist)
 
-    go.Fifure([go.Scatter(x=space, y=mu_dist, mode='markers+lines', name=r'$\widehat\mu$')],
-              layout = go.Layout(title=r"$\text{(2) The Distance Between Estimated And True Value Of The Expectation As Functiom Of Samples Number}$",
-        xaxis_title="$m\\text{number of samples}$", yaxis_title="r$\{distance}\mu$", height=300)).show()
+    go.Figure([go.Scatter(x=space, y=mu_dists, mode='markers+lines', name=r'$\widehat\mu$')],
+              layout=go.Layout(title="Distance between Estimated and True Value of The Expectation As "
+                                     "Functiom Of Samples Number", xaxis=dict(title="number of samples"),
+                               yaxis=dict(title="distance"), height=300, width=1000)).show()
 
     # Question 3 - Plotting Empirical PDF of fitted model
     pdf = uni_random.pdf(X)
 
-    go.Fifure([go.Scatter(x=X, y=pdf, mode='markers+lines', name=r'$\widehat\mu$')],
-               layout = go.Layout(title=r"$\text{(3) PDF}$", xaxis_title="$m\\text{samples}$",
-                                  yaxis_title="r$\{pdf(x)}\mu$", height=300)).show()
+    go.Figure([go.Scatter(x=X, y=pdf, mode='markers', name=r'$\widehat\mu$')], layout=go.Layout(title="PDF of Samples",
+                            xaxis=dict(title="samples"), yaxis=dict(title="pdf"), height=300, width=1000)).show()
 
 
 def test_multivariate_gaussian():
@@ -49,7 +49,7 @@ def test_multivariate_gaussian():
     log_likelihood_mat = []
 
     max_val = np.NINF
-    f1_max, _f3_max = -10, -10
+    f1_max, f3_max = -10, -10
 
     for f1 in space:
         row_vals = []
@@ -58,21 +58,18 @@ def test_multivariate_gaussian():
             log_likelihood = multi_random.log_likelihood(mu, cov, x)
             row_vals.append(log_likelihood)
 
-            if max_val < log_likelihood:  # for Question 6
+            if max_val < log_likelihood:           # for Question 6
                 max_val = log_likelihood
                 f1_max, f3_max = f1, f3
 
+        log_likelihood_mat.append(row_vals)
 
-    log_likelihood_mat.append(row_vals)
-
-    go.Figure(data=go.Heatmap(x=space, y=space, z=log_likelihood_mat),
-          layout=go.Layout(title=r"$\text{Log-Likelihood Heatmap}$"),
-          xaxis=dict(title=r"$\text{f1 values}$"),
-          yaxis=dict(title=r"$\text{f3 values}$")).show()
+    go.Figure(go.Contour(x=space, y=space, z=log_likelihood_mat)).update_layout(title="Log-Likelihood Heatmap",
+            xaxis=dict(title="f1 values"), yaxis=dict(title="f3 values"), height=500, width=500).show()
 
 
 # Question 6 - Maximum likelihood
-    f1_max, f3_max = round(f1, 3), round(f3, 3)
+    f1_max, f3_max = round(f1_max, 3), round(f3_max, 3)
     print(f1_max, f3_max)
 
 
