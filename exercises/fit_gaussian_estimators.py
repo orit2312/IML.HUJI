@@ -65,7 +65,7 @@ def test_multivariate_gaussian():
         log_likelihood_mat.append(row_vals)
 
     go.Figure(go.Contour(x=space, y=space, z=log_likelihood_mat)).update_layout(title="Log-Likelihood Heatmap",
-            xaxis=dict(title="f1 values"), yaxis=dict(title="f3 values"), height=500, width=500).show()
+            xaxis=dict(title="f3 values"), yaxis=dict(title="f1 values"), height=500, width=500).show()
 
 
 # Question 6 - Maximum likelihood

@@ -33,6 +33,7 @@ class Perceptron(BaseEstimator):
         to be filled in `Perceptron.fit` function.
 
     """
+
     def __init__(self,
                  include_intercept: bool = True,
                  max_iter: int = 1000,
@@ -90,7 +91,30 @@ class Perceptron(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.fit_intercept_`
         """
-        raise NotImplementedError()
+        n_samples, n_features = X.shape
+        if self.include_intercept_:
+            one_vec = np.array(np.ones(n_samples, ), dtype=int).reshape(1, -1)
+            trans_vec = np.transpose(one_vec)
+            X = np.concatenate((trans_vec, X), axis=1)
+            n_features += 1
+
+        self.coefs_ = np.zeros(n_features)
+
+        for t in range(self.max_iter_):
+            counter = 1
+            for i, xi in enumerate(X):
+                inner_product = y[i] * (np.transpose(self.coefs_) @ xi)
+                if inner_product <= 0:
+                    if self.fitted_ is False:
+                        self.fitted_ = True
+                    self.coefs_ = self.coefs_ + y[i] * xi
+                    self.callback_(self, xi, y[i])
+                    break
+                else:
+                    counter += 1
+                    # self.callback_(self, xi, y[i])
+            if counter == n_samples:
+                break
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -106,7 +130,9 @@ class Perceptron(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        if self.include_intercept_:
+            return np.sign(X.dot(self.coefs_[1:]) + self.coefs_[0])
+        return np.sign(X.dot(self.coefs_))
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -125,4 +151,6 @@ class Perceptron(BaseEstimator):
         loss : float
             Performance under missclassification loss function
         """
-        raise NotImplementedError()
+        from ...metrics import misclassification_error
+        y_pred = self.predict(X)
+        return misclassification_error(y, y_pred)
