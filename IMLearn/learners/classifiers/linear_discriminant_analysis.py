@@ -2,7 +2,6 @@ from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
 from numpy.linalg import det, inv
-import scipy.stats
 
 
 class LDA(BaseEstimator):
@@ -47,28 +46,7 @@ class LDA(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        self.classes_, n_k = np.unique(y, return_counts=True)
-        mu_mat = []
-        n_samples, n_features = X.shape
-
-        for j in range(len(self.classes_)):
-            k_mu = np.zeros(n_features)
-            for i, yi in enumerate(y):
-                if yi == self.classes_[j]:     #classes[j] = k
-                    k_mu += X[i]
-            k_mu = k_mu / n_k[j]
-            mu_mat.append(k_mu)
-        self.mu_ = np.array(mu_mat)
-
-        self.cov_ = np.ndarray((n_features, n_features))
-        for i, k in enumerate(self.classes_):
-            x_sub_mu = X[y == k] - self.mu_[i]
-            self.cov_ += x_sub_mu.T @ x_sub_mu
-        self.cov_ = (1 / (n_samples - len(self.classes_))) * self.cov_
-
-        self._cov_inv = inv(self.cov_)
-
-        self.pi_ = n_k / n_samples
+        raise NotImplementedError()
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -84,18 +62,7 @@ class LDA(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        y_hat = []
-        for sam_ind in range(X.shape[0]):
-            vals = []
-            for k_ind in range(len(self.classes_)):
-                mu_k = np.transpose(self.mu_[k_ind])
-                a_k = self._cov_inv @  mu_k
-                b_k = np.log(self.pi_[k_ind]) - 0.5 * self.mu_[k_ind] @ a_k
-                val_k = a_k @ X[sam_ind] + b_k
-                vals.append(val_k)
-            res = np.argmax(vals)
-            y_hat.append(res)
-        return np.array(y_hat)
+        raise NotImplementedError()
 
     def likelihood(self, X: np.ndarray) -> np.ndarray:
         """
@@ -115,12 +82,7 @@ class LDA(BaseEstimator):
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `likelihood` function")
 
-        n_samples = X.shape[0]
-        likelihood_mat = np.zeros((n_samples, len(self.classes_)))
-        for k in range(len(self.classes_)):
-            prob_per_k = scipy.stats.multivariate_normal(self.mu_[k], self.cov_).logpdf(X) + np.log(self.pi_[k])
-            likelihood_mat[:, k] = prob_per_k
-        return likelihood_mat
+        raise NotImplementedError()
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -140,7 +102,4 @@ class LDA(BaseEstimator):
             Performance under missclassification loss function
         """
         from ...metrics import misclassification_error
-        y_pred = self.predict(X)
-        return misclassification_error(y, y_pred)
-
-
+        raise NotImplementedError()
